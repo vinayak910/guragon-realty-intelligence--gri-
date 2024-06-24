@@ -1,30 +1,29 @@
-# -*- coding: utf-8 -*-
-import click
+import sys
 import logging
+from yaml import SafeLoader
+import pandas as pd
 from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
+from sklearn.model_selection import train_test_split
+from src.logger import create_log_path , CustomLogger
 
+log_file_path = create_log_path('make_dataset')
+# create the custom logger object
+dataset_logger = CustomLogger(logger_name= 'make_dataset'
+                              ,log_filename= log_file_path)
 
-@click.command()
-@click.argument('input_filepath', type=click.Path(exists=True))
-@click.argument('output_filepath', type=click.Path())
-def main(input_filepath, output_filepath):
-    """ Runs data processing scripts to turn raw data from (../raw) into
-        cleaned data ready to be analyzed (saved in ../processed).
-    """
-    logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
+# set the level of logging to INFO
+dataset_logger.set_log_level(level = logging.INFO)
 
+def load_raw_data(input_path: Path)-> pd.DataFrame:
+    raw_data = pd.read_csv(input_path)
+    rows , columns = raw_data.shape
+    dataset_logger.save_logs(msg = f'{input_path.stem} data read having {rows} rows and {columns} olumns',
+                             log_level = 'info')
+    
+    return raw_data
 
-if __name__ == '__main__':
-    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=logging.INFO, format=log_fmt)
-
-    # not used in this stub but often useful for finding various files
-    project_dir = Path(__file__).resolve().parents[2]
-
-    # find .env automagically by walking up directories until it's found, then
-    # load up the .env entries as environment variables
-    load_dotenv(find_dotenv())
-
-    main()
+def train_val_split(data:pd.DataFrame,
+                    test_size:float,
+                    random_state: int)->tuple[pd.DataFrame , pd.DataFrame]:
+    
+    train_data , val_data = 
